@@ -15,4 +15,9 @@ class SkyDemoApplicationTests {
         System.out.println("test");
     }
 
+    @Test
+    void test2() {
+        System.out.println("冲突合并");
+    }
+
 }
