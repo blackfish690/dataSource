@@ -10,4 +10,9 @@ class SkyDemoApplicationTests {
     void contextLoads() {
     }
 
+    @Test
+    void test() {
+        System.out.println("test");
+    }
+
 }
