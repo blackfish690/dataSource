@@ -140,12 +140,13 @@ public class SwitchDataSourceAspect {
                 .resolveReference(RequestAttributes.REFERENCE_REQUEST);
         String authorization = request.getHeader("Authorization");
 
-        if (authorization.equals("sys")) {
-            if (!"".equalsIgnoreCase(authorization)) {
-                SwitchDataSource targetDataSource = (SwitchDataSource) targetClass.getAnnotation(SwitchDataSource.class);
-                SwitchDataSource methodDataSource = method.getAnnotation(SwitchDataSource.class);
+        if (!"".equalsIgnoreCase(authorization)) {
+            SwitchDataSource targetDataSource = (SwitchDataSource) targetClass.getAnnotation(SwitchDataSource.class);
+            SwitchDataSource methodDataSource = method.getAnnotation(SwitchDataSource.class);
 
-                if (targetDataSource != null || methodDataSource != null) {
+            if (targetDataSource != null || methodDataSource != null) {
+                //此处可以修改为使用redis或缓存获取,还可以使用http客户端获取
+                if (authorization.equals("sys")) {
                     DruidDataSource druidDataSource = new DruidDataSource();
                     druidDataSource.setUrl("jdbc:mysql://localhost:3306/sys_test?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=UTC");
                     druidDataSource.setUsername("root");
@@ -158,29 +159,23 @@ public class SwitchDataSourceAspect {
                     //将创建的连接放到连接池，律所ID作为连接的KEY
                     DynamicDataSource.dataSourcesMap.put(authorization, druidDataSource);
                     DynamicDataSource.setDataSource(authorization);
+                } else {
+                    DruidDataSource druidDataSource = new DruidDataSource();
+                    druidDataSource.setUrl("jdbc:mysql://localhost:3306/sys?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=UTC");
+                    druidDataSource.setUsername("root");
+                    druidDataSource.setPassword("password");
+                    druidDataSource.setConnectionErrorRetryAttempts(errorRetry);//连接错误后重试次数
+                    druidDataSource.setTimeBetweenConnectErrorMillis(errorRetryInterval);//连接错误后重试时间
+                    druidDataSource.setBreakAfterAcquireFailure(breakAfterAcquireFailure);//获取连接失败后再次获取
+                    druidDataSource.setMaxWait(maxWait);//最大等待时间，单位毫秒
+                    druidDataSource.setMaxActive(maxActive);//最大连接数
+                    //将创建的连接放到连接池，律所ID作为连接的KEY
+                    DynamicDataSource.dataSourcesMap.put(authorization, druidDataSource);
+                    DynamicDataSource.setDataSource(authorization);
                 }
-            }
-            else {
-                if (!"".equalsIgnoreCase(authorization)) {
-                    SwitchDataSource targetDataSource = (SwitchDataSource) targetClass.getAnnotation(SwitchDataSource.class);
-                    SwitchDataSource methodDataSource = method.getAnnotation(SwitchDataSource.class);
 
-                    if (targetDataSource != null || methodDataSource != null) {
-                        DruidDataSource druidDataSource = new DruidDataSource();
-                        druidDataSource.setUrl("jdbc:mysql://localhost:3306/sys_test?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=UTC");
-                        druidDataSource.setUsername("root");
-                        druidDataSource.setPassword("password");
-                        druidDataSource.setConnectionErrorRetryAttempts(errorRetry);//连接错误后重试次数
-                        druidDataSource.setTimeBetweenConnectErrorMillis(errorRetryInterval);//连接错误后重试时间
-                        druidDataSource.setBreakAfterAcquireFailure(breakAfterAcquireFailure);//获取连接失败后再次获取
-                        druidDataSource.setMaxWait(maxWait);//最大等待时间，单位毫秒
-                        druidDataSource.setMaxActive(maxActive);//最大连接数
-                        //将创建的连接放到连接池，律所ID作为连接的KEY
-                        DynamicDataSource.dataSourcesMap.put(authorization, druidDataSource);
-                        DynamicDataSource.setDataSource(authorization);
-                    }
-                }
             }
+        }
 
 
 //        //这里判断corpId是否为空，如果为空则回到从缓存获取
@@ -231,7 +226,6 @@ public class SwitchDataSourceAspect {
 //                }
 //            }
 
-        }
         try {
             return point.proceed();
         } catch (Exception e) {
