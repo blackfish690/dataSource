@@ -32,9 +32,14 @@ import java.util.Map;
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public class SwitchDataSourceAspect {
 
-
+    /**
+     * 日志记录器
+     */
     protected Logger logger = LoggerFactory.getLogger(getClass());
 
+    /**
+     * 数据源配置参数
+     */
     @Value("${prop.druidDataSourceConfig.error-retry}")
     private Integer errorRetry;
     @Value("${prop.druidDataSourceConfig.error-retry-interval}")
@@ -46,95 +51,34 @@ public class SwitchDataSourceAspect {
     @Value("${prop.druidDataSourceConfig.maxactive}")
     private Integer maxActive;
 
-
+    /**
+     * 切入点：处理带有SwitchDataSource注解的类
+     */
     @Pointcut("@within(com.sky.skydemo.datasource.annotation.SwitchDataSource)")
     public void dataSourcePointCut() {
     }
 
-    //    @Around("dataSourcePointCut()")
-//    public Object around(ProceedingJoinPoint point) throws Throwable {
-//        MethodSignature signature = (MethodSignature) point.getSignature();
-//        Class targetClass = point.getTarget().getClass();
-//        Method method = signature.getMethod();
-//
-//        //// 获取RequestAttributes
-//        RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
-//        // 从获取RequestAttributes中获取HttpServletRequest的信息
-//        HttpServletRequest request = (HttpServletRequest) requestAttributes
-//                .resolveReference(RequestAttributes.REFERENCE_REQUEST);
-//        //从header中获取token
-//        String token = request.getHeader("Authorization");
-//        //从Redis上获取律所信息
-//        EpmCorpEntity epmCorpEntity = redisUtils.get(token + ":corp", EpmCorpEntity.class);
-//        //获取律所连接
-//        CorpDBConnForm corpDBConnForm = JSONObject.parseObject(epmCorpEntity.getDbconnstring(), CorpDBConnForm.class);
-//
-//        //从这里获取redis缓存的用户信息，通过该信息拼装数据库连接url
-//
-//        SwitchDataSource targetDataSource = (SwitchDataSource)targetClass.getAnnotation(SwitchDataSource.class);
-//        SwitchDataSource methodDataSource = method.getAnnotation(SwitchDataSource.class);
-//        if(targetDataSource != null || methodDataSource != null){
-//            //根据key向连接池获取连接，如果为空则创建连接并放进连接池,如果不为空就将连接池获取到的连接设置为当前连接
-//            //律所ID作为连接的KEY
-//            Object dbkey = DynamicDataSource.dataSourcesMap.get(epmCorpEntity.getCorpid());
-//            if (dbkey == null){
-//                DruidDataSource druidDataSource = new DruidDataSource();
-//                druidDataSource.setUrl(corpDBConnForm.getServer()+corpDBConnForm.getDatabase());
-//                druidDataSource.setUsername(corpDBConnForm.getUsername());
-//                druidDataSource.setPassword(corpDBConnForm.getPassword());
-//                //将创建的连接放到连接池，律所ID作为连接的KEY
-//                DynamicDataSource.dataSourcesMap.put(epmCorpEntity.getCorpid(), druidDataSource);
-//                //设置当前连接
-//                DynamicDataSource.setDataSource(epmCorpEntity.getCorpid());
-//                //流程引擎连接
-//                ProcessEngineConfiguration processEngineConfiguration = ProcessEngineConfiguration.createStandaloneProcessEngineConfiguration();
-//                processEngineConfiguration.setDataSource(druidDataSource);
-//            }else{
-//                DynamicDataSource.setDataSource(epmCorpEntity.getCorpid());
-//                //流程引擎连接
-//                ProcessEngineConfiguration processEngineConfiguration = ProcessEngineConfiguration.createStandaloneProcessEngineConfiguration();
-//                processEngineConfiguration.setDataSource((DataSource) DynamicDataSource.dataSourcesMap.get(epmCorpEntity.getCorpid()));
-//            }
-//        }
-//
-//        try {
-//            return point.proceed();
-//        } finally {
-//            DynamicDataSource.clear();
-//            logger.debug("clean datasource");
-//        }
-//    }
+    /**
+     * 切入点：处理带有SwitchDataSource注解的方法
+     */
     @Pointcut("@annotation(com.sky.skydemo.datasource.annotation.SwitchDataSource) ")
     public void dataSourcePointCutP() {
     }
 
-//    @Autowired
-//    private CloseableHttpClientToMaster closeableHttpClientToMaster;
-
+    /**
+     * 环绕通知：处理带有SwitchDataSource注解的方法
+     *
+     * @param point 切入点
+     * @return 方法执行结果
+     * @throws Throwable 方法执行异常
+     */
     @Around("dataSourcePointCutP()")
     public Object aroundP(ProceedingJoinPoint point) throws Throwable {
         MethodSignature signature = (MethodSignature) point.getSignature();
         Class targetClass = point.getTarget().getClass();
         Method method = signature.getMethod();
 
-        //判断如果有corpId的话，就去master获取对应corp的连接字符串，如果没有则回到从缓存获取
-        String corpId = "";
-        //请求的参数
-        Object[] args = point.getArgs();
-        String[] argsNames = signature.getParameterNames();
-        Map<String, Object> params = new HashMap<>();
-        for (int i = 0; i < Math.max(argsNames.length, args.length); i++) {
-            //参数带有corpId时进行处理
-            if ("corpId".equalsIgnoreCase(argsNames[i])) {
-                if (args[i] != null) {
-                    corpId = args[i].toString();
-                }
-            }
-        }
-
-        logger.debug("注解：指定多数据源请求参数(corpId)：" + corpId);
-
-        //获取请求头
+        // 获取请求头
         RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
         HttpServletRequest request = (HttpServletRequest) requestAttributes
                 .resolveReference(RequestAttributes.REFERENCE_REQUEST);
@@ -145,95 +89,54 @@ public class SwitchDataSourceAspect {
             SwitchDataSource methodDataSource = method.getAnnotation(SwitchDataSource.class);
 
             if (targetDataSource != null || methodDataSource != null) {
-                //此处可以修改为使用redis或缓存获取,还可以使用http客户端获取
+                // 根据请求头中的Authorization信息选择数据源
                 if (authorization.equals("sys")) {
+                    // 系统测试数据库配置
                     DruidDataSource druidDataSource = new DruidDataSource();
                     druidDataSource.setUrl("jdbc:mysql://localhost:3306/sys_test?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=UTC");
                     druidDataSource.setUsername("root");
                     druidDataSource.setPassword("password");
-                    druidDataSource.setConnectionErrorRetryAttempts(errorRetry);//连接错误后重试次数
-                    druidDataSource.setTimeBetweenConnectErrorMillis(errorRetryInterval);//连接错误后重试时间
-                    druidDataSource.setBreakAfterAcquireFailure(breakAfterAcquireFailure);//获取连接失败后再次获取
-                    druidDataSource.setMaxWait(maxWait);//最大等待时间，单位毫秒
-                    druidDataSource.setMaxActive(maxActive);//最大连接数
-                    //将创建的连接放到连接池，律所ID作为连接的KEY
+                    configureDruidDataSource(druidDataSource);
                     DynamicDataSource.dataSourcesMap.put(authorization, druidDataSource);
                     DynamicDataSource.setDataSource(authorization);
                 } else {
+                    // 默认数据库配置
                     DruidDataSource druidDataSource = new DruidDataSource();
                     druidDataSource.setUrl("jdbc:mysql://localhost:3306/sys?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=UTC");
                     druidDataSource.setUsername("root");
                     druidDataSource.setPassword("password");
-                    druidDataSource.setConnectionErrorRetryAttempts(errorRetry);//连接错误后重试次数
-                    druidDataSource.setTimeBetweenConnectErrorMillis(errorRetryInterval);//连接错误后重试时间
-                    druidDataSource.setBreakAfterAcquireFailure(breakAfterAcquireFailure);//获取连接失败后再次获取
-                    druidDataSource.setMaxWait(maxWait);//最大等待时间，单位毫秒
-                    druidDataSource.setMaxActive(maxActive);//最大连接数
-                    //将创建的连接放到连接池，律所ID作为连接的KEY
+                    configureDruidDataSource(druidDataSource);
                     DynamicDataSource.dataSourcesMap.put(authorization, druidDataSource);
                     DynamicDataSource.setDataSource(authorization);
                 }
-
             }
         }
 
-
-//        //这里判断corpId是否为空，如果为空则回到从缓存获取
-//        if (!"".equalsIgnoreCase(corpId)) {
-//            SwitchDataSource targetDataSource = (SwitchDataSource) targetClass.getAnnotation(SwitchDataSource.class);
-//            SwitchDataSource methodDataSource = method.getAnnotation(SwitchDataSource.class);
-//            if (targetDataSource != null || methodDataSource != null) {
-//                //从Redis上获取律所信息
-//                EpmCorpEntity epmCorpEntity = null;
-//
-//                if (epmCorpEntity == null) {
-//                    try {
-////                        epmCorpEntity = closeableHttpClientToMaster.MasterGetCropInfo(corpId);
-//                        if (epmCorpEntity != null) {
-//                            //没有找到corp相关的缓存信息，重新创建
-////                            redisUtils.set(corpId + ":corp", epmCorpEntity);
-//                        } else {
-//                            logger.error("在没有找到corp相关的缓存信息，重新创建时出错，没有找到对应的corp，无法创建缓存");
-//                        }
-//                    } catch (Exception e) {
-//                        logger.error("在没有找到corp相关的缓存信息，重新创建时出错，没有找到对应的corp，错误信息：" + e.toString());
-//                    }
-//                }
-//
-//                //获取律所连接
-//                CorpDBConnForm corpDBConnForm = JSONObject.parseObject(epmCorpEntity.getDbconnstring(), CorpDBConnForm.class);
-//                //根据key向连接池获取连接，如果为空则创建连接并放进连接池,如果不为空就将连接池获取到的连接设置为当前连接
-//                //律所ID作为连接的KEY
-//                Object dbkey = DynamicDataSource.dataSourcesMap.get(epmCorpEntity.getCorpid());
-//                if (dbkey == null) {
-//                    DruidDataSource druidDataSource = new DruidDataSource();
-//                    druidDataSource.setUrl(corpDBConnForm.getServer() + corpDBConnForm.getDatabase());
-//                    druidDataSource.setUsername(corpDBConnForm.getUsername());
-//                    druidDataSource.setPassword(corpDBConnForm.getPassword());
-//                    druidDataSource.setConnectionErrorRetryAttempts(errorRetry);//连接错误后重试次数
-//                    druidDataSource.setTimeBetweenConnectErrorMillis(errorRetryInterval);//连接错误后重试时间
-//                    druidDataSource.setBreakAfterAcquireFailure(breakAfterAcquireFailure);//获取连接失败后再次获取
-//                    druidDataSource.setMaxWait(maxWait);//最大等待时间，单位毫秒
-//                    druidDataSource.setMaxActive(maxActive);//最大连接数
-//                    //将创建的连接放到连接池，律所ID作为连接的KEY
-//                    DynamicDataSource.dataSourcesMap.put(epmCorpEntity.getCorpid(), druidDataSource);
-//                    //设置当前连接
-//                    DynamicDataSource.setDataSource(epmCorpEntity.getCorpid());
-//                    //流程引擎连接
-//                } else {
-//                    DynamicDataSource.setDataSource(epmCorpEntity.getCorpid());
-//                    //流程引擎连接
-//                }
-//            }
-
+        // 尝试执行某个操作，并处理可能发生的异常
         try {
+            // 执行操作，point.proceed()表示执行当前切面的下一个方法
             return point.proceed();
         } catch (Exception e) {
+            // 捕获异常，记录错误日志，并返回null
             logger.error(e.toString());
             return null;
         } finally {
+            // 无论是否发生异常，都执行清理操作
             DynamicDataSource.clear();
             logger.debug("clean datasource");
         }
+    }
+
+    /**
+     * 配置Druid数据源公共方法
+     *
+     * @param druidDataSource Druid数据源实例
+     */
+    private void configureDruidDataSource(DruidDataSource druidDataSource) {
+        druidDataSource.setConnectionErrorRetryAttempts(errorRetry);
+        druidDataSource.setTimeBetweenConnectErrorMillis(errorRetryInterval);
+        druidDataSource.setBreakAfterAcquireFailure(breakAfterAcquireFailure);
+        druidDataSource.setMaxWait(maxWait);
+        druidDataSource.setMaxActive(maxActive);
     }
 }

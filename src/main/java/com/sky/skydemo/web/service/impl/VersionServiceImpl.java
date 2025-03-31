@@ -13,7 +13,7 @@ public class VersionServiceImpl extends ServiceImpl<VersionDao,VersionEntity> im
 
 
     @Override
-    @SwitchDataSource
+
     public VersionEntity getVersion() {
         List<VersionEntity> versionEntities = this.baseMapper.selectList(null);
         return versionEntities.get(0);
