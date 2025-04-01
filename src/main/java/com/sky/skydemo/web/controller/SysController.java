@@ -30,6 +30,7 @@ public class SysController {
 //        return R.ok().put("versionEntity", versionEntity);
 //    }
 
+    @SwitchDataSource
     @GetMapping(value = "/newVersion")
     public R getNewVersion() {
         Version version = versionService.getOne(new LambdaQueryWrapper<Version>()

@@ -2,7 +2,7 @@ package com.sky.skydemo.datasource.aspect;
 
 import com.alibaba.druid.pool.DruidDataSource;
 import com.sky.skydemo.datasource.annotation.SwitchDataSource;
-import com.sky.skydemo.datasource.dynamicdatasource.DynamicDataSource;
+import com.sky.skydemo.datasource.config.DynamicDataSource;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -19,8 +19,6 @@ import org.springframework.web.context.request.RequestContextHolder;
 
 import javax.servlet.http.HttpServletRequest;
 import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * 多数据源，切面处理类
@@ -82,32 +80,34 @@ public class SwitchDataSourceAspect {
         RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
         HttpServletRequest request = (HttpServletRequest) requestAttributes
                 .resolveReference(RequestAttributes.REFERENCE_REQUEST);
-        String authorization = request.getHeader("Authorization");
+        String header = request.getHeader("X-Tenant-ID");
 
-        if (!"".equalsIgnoreCase(authorization)) {
+        if (!"".equalsIgnoreCase(header)) {
             SwitchDataSource targetDataSource = (SwitchDataSource) targetClass.getAnnotation(SwitchDataSource.class);
             SwitchDataSource methodDataSource = method.getAnnotation(SwitchDataSource.class);
 
             if (targetDataSource != null || methodDataSource != null) {
                 // 根据请求头中的Authorization信息选择数据源
-                if (authorization.equals("sys")) {
+                if (header.equals("sky-mall")) {
+                    System.out.println("切换数据源为sky-mall");
                     // 系统测试数据库配置
                     DruidDataSource druidDataSource = new DruidDataSource();
-                    druidDataSource.setUrl("jdbc:mysql://localhost:3306/sys_test?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=UTC");
+                    druidDataSource.setUrl("jdbc:mysql://121.37.11.215:3306/sky-mall?useUnicode=true&characterEncoding=utf-8&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai");
                     druidDataSource.setUsername("root");
-                    druidDataSource.setPassword("password");
+                    druidDataSource.setPassword("U2jbmZXTVK");
                     configureDruidDataSource(druidDataSource);
-                    DynamicDataSource.dataSourcesMap.put(authorization, druidDataSource);
-                    DynamicDataSource.setDataSource(authorization);
-                } else {
+                    DynamicDataSource.dataSourcesMap.put(header, druidDataSource);
+                    DynamicDataSource.setDataSource(header);
+                } else if (header.equals("sky-mall-test")){
+                    System.out.println("切换数据源为sky-mall-test");
                     // 默认数据库配置
                     DruidDataSource druidDataSource = new DruidDataSource();
-                    druidDataSource.setUrl("jdbc:mysql://localhost:3306/sys?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=UTC");
+                    druidDataSource.setUrl("jdbc:mysql://121.37.11.215:3306/sky-mall-test?useUnicode=true&characterEncoding=utf-8&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai");
                     druidDataSource.setUsername("root");
-                    druidDataSource.setPassword("password");
+                    druidDataSource.setPassword("U2jbmZXTVK");
                     configureDruidDataSource(druidDataSource);
-                    DynamicDataSource.dataSourcesMap.put(authorization, druidDataSource);
-                    DynamicDataSource.setDataSource(authorization);
+                    DynamicDataSource.dataSourcesMap.put(header, druidDataSource);
+                    DynamicDataSource.setDataSource(header);
                 }
             }
         }

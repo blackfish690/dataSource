@@ -1,4 +1,4 @@
-package com.sky.skydemo.datasource.dynamicdatasource;
+package com.sky.skydemo.datasource.config;
 
 import com.alibaba.druid.pool.DruidDataSource;
 import com.alibaba.fastjson.JSONObject;
@@ -49,7 +49,7 @@ public class DynamicDataSource extends AbstractRoutingDataSource {
 
     // 静态初始化块，初始化默认数据源
     static {
-        dataSourcesMap.put("defaultDataSource", SpringUtils.getBean("defaultDataSource"));
+        dataSourcesMap.put("defaultDataSource", com.sky.skydemo.datasource.dynamicdatasource.SpringUtils.getBean("defaultDataSource"));
     }
 
     /**
@@ -111,7 +111,7 @@ public class DynamicDataSource extends AbstractRoutingDataSource {
      */
     public static void setDataSource(String dataSource) {
         DynamicDataSource.dataSourceKey.set(dataSource);
-        DynamicDataSource dynamicDataSource = (DynamicDataSource) SpringUtils.getBean("dataSource");
+        DynamicDataSource dynamicDataSource = (DynamicDataSource) com.sky.skydemo.datasource.dynamicdatasource.SpringUtils.getBean("dataSource");
         dynamicDataSource.afterPropertiesSet();
     }
 
