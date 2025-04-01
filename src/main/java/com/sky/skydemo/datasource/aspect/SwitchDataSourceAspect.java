@@ -2,7 +2,7 @@
 //
 //import com.alibaba.druid.pool.DruidDataSource;
 //import com.sky.skydemo.datasource.annotation.SwitchDataSource;
-//import com.sky.skydemo.datasource.config.DynamicDataSource;
+//import com.sky.skydemo.datasource.dynamicdatasource.DynamicDataSource;
 //import org.aspectj.lang.ProceedingJoinPoint;
 //import org.aspectj.lang.annotation.Around;
 //import org.aspectj.lang.annotation.Aspect;

@@ -1,4 +1,4 @@
-package com.sky.skydemo.config;
+package com.sky.skydemo.dynamicdatasource;
 
 import com.alibaba.druid.pool.DruidDataSource;
 import org.springframework.stereotype.Component;
@@ -80,19 +80,19 @@ public class DatabaseConnectionInterceptor implements HandlerInterceptor {
     }
 
     private DataSource getOrCreateDataSource(String tenantId) {
-        DataSource dataSource = dataSourceCache.get(tenantId);
-        if (dataSource == null) {
-            synchronized (dataSourceCreationLock) {
-                dataSource = dataSourceCache.get(tenantId);
-                if (dataSource == null) {
-                    dataSource = createDataSource(tenantId);
-                    if (dataSource != null) {
-                        dataSourceCache.put(tenantId, dataSource);
-                    }
-                }
-            }
-        }
-        return dataSource;
+//        DataSource dataSource = dataSourceCache.get(tenantId);
+//        if (dataSource == null) {
+//            synchronized (dataSourceCreationLock) {
+//                dataSource = dataSourceCache.get(tenantId);
+//                if (dataSource == null) {
+//                    dataSource = createDataSource(tenantId);
+//                    if (dataSource != null) {
+//                        dataSourceCache.put(tenantId, dataSource);
+//                    }
+//                }
+//            }
+//        }
+//        return dataSource;
     }
 
     private void switchDataSource(String tenantId, DataSource dataSource) {

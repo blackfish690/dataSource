@@ -1,7 +1,7 @@
-//package com.sky.skydemo.datasource.config;
+//package com.sky.skydemo.datasource.dynamicdatasource;
 //
 //import com.alibaba.druid.spring.boot.autoconfigure.DruidDataSourceBuilder;
-//import com.sky.skydemo.config.DynamicDataSource;
+//import com.sky.skydemo.dynamicdatasource.DynamicDataSource;
 //import org.springframework.context.annotation.Bean;
 //import org.springframework.context.annotation.Configuration;
 //import org.springframework.context.annotation.DependsOn;

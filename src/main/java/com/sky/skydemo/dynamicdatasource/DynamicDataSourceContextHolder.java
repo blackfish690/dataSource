@@ -1,4 +1,4 @@
-package com.sky.skydemo.config;
+package com.sky.skydemo.dynamicdatasource;
 
 public class DynamicDataSourceContextHolder {
     private static final ThreadLocal<String> contextHolder = new ThreadLocal<String>();

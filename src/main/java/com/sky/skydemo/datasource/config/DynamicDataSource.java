@@ -1,4 +1,4 @@
-//package com.sky.skydemo.datasource.config;
+//package com.sky.skydemo.datasource.dynamicdatasource;
 //
 //import com.alibaba.druid.pool.DruidDataSource;
 //import com.alibaba.fastjson.JSONObject;

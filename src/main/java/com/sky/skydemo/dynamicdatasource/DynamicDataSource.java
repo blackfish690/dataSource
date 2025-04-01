@@ -1,4 +1,4 @@
-package com.sky.skydemo.config;
+package com.sky.skydemo.dynamicdatasource;
 
 import org.springframework.jdbc.datasource.lookup.AbstractRoutingDataSource;
 

@@ -1,4 +1,4 @@
-//package com.sky.skydemo.datasource.config;
+//package com.sky.skydemo.datasource.dynamicdatasource;
 //
 //import org.springframework.beans.BeansException;
 //import org.springframework.context.ApplicationContext;
