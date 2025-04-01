@@ -15,10 +15,10 @@ spring:
 #    timeout: 6000ms  # 连接超时时长（毫秒）
   datasource:
 #    jdbcUrl: jdbc:mysql://localhost:3306/sys?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=UTC
-    url: jdbc:mysql://localhost:3306/sys?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=UTC
+    url: jdbc:mysql://121.37.11.215:3306/sky-mall?useUnicode=true&characterEncoding=utf-8&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai
     username: root
 #    password: 123456
-    password: password
+    password: U2jbmZXTVK
     driver-class-name: com.mysql.cj.jdbc.Driver
 
 prop:

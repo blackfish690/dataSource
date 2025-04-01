@@ -38,24 +38,26 @@ public class DatabaseConnectionInterceptor implements HandlerInterceptor {
         // 假设租户ID通过请求头传递
         String tenantId = request.getHeader("X-Tenant-ID");
         if (tenantId != null) {
-            if (tenantId.equals("sys")) {
+            if (tenantId.equals("sky-mall")) {
                 DruidDataSource druidDataSource = new DruidDataSource();
-                druidDataSource.setUrl("jdbc:mysql://localhost:3306/sys?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true");
+                druidDataSource.setUrl("jdbc:mysql://121.37.11.215:3306/sky-mall?useUnicode=true&characterEncoding=utf-8&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai");
                 druidDataSource.setUsername("root");
-                druidDataSource.setPassword("password");
+                druidDataSource.setPassword("U2jbmZXTVK");
                 configureDruidDataSource(druidDataSource);
                 DynamicDataSource.dataSourcesMap.put(tenantId, druidDataSource);
                 DynamicDataSource.setDataSource(tenantId);
-            } else if (tenantId.equals("sys_test")) {
+                return true;
+            } else if (tenantId.equals("sky-mall-test")) {
                 DruidDataSource druidDataSource = new DruidDataSource();
-                druidDataSource.setUrl("jdbc:mysql://localhost:3306/sys_test?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true");
+                druidDataSource.setUrl("jdbc:mysql://121.37.11.215:3306/sky-mall-test?useUnicode=true&characterEncoding=utf-8&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai");
                 druidDataSource.setUsername("root");
-                druidDataSource.setPassword("password");
+                druidDataSource.setPassword("U2jbmZXTVK");
                 configureDruidDataSource(druidDataSource);
                 DynamicDataSource.dataSourcesMap.put(tenantId, druidDataSource);
                 DynamicDataSource.setDataSource(tenantId);
+                return true;
             }
-            return true;
+            return false;
         } else {
             return false;
         }
@@ -79,7 +81,7 @@ public class DatabaseConnectionInterceptor implements HandlerInterceptor {
         DynamicDataSource.clear();
     }
 
-    private DataSource getOrCreateDataSource(String tenantId) {
+//    private DataSource getOrCreateDataSource(String tenantId) {
 //        DataSource dataSource = dataSourceCache.get(tenantId);
 //        if (dataSource == null) {
 //            synchronized (dataSourceCreationLock) {
@@ -93,7 +95,7 @@ public class DatabaseConnectionInterceptor implements HandlerInterceptor {
 //            }
 //        }
 //        return dataSource;
-    }
+//    }
 
     private void switchDataSource(String tenantId, DataSource dataSource) {
         synchronized (dataSourceSwitchLock) {

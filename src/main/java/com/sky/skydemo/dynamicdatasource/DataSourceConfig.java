@@ -20,7 +20,6 @@ public class DataSourceConfig {
      * @return DynamicDataSource 动态数据源实例
      */
     @Bean
-    @Primary
     @DependsOn({"springUtils"})
     public DynamicDataSource dataSource() {
         DynamicDataSource dynamicDataSource = new DynamicDataSource();
