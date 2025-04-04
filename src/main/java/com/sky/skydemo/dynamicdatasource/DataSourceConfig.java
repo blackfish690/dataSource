@@ -1,6 +1,7 @@
 //package com.sky.skydemo.dynamicdatasource;
 //
 //import com.alibaba.druid.spring.boot.autoconfigure.DruidDataSourceBuilder;
+//import com.sky.skydemo.datasource.config.DynamicDataSource;
 //import org.springframework.boot.context.properties.ConfigurationProperties;
 //import org.springframework.context.annotation.Bean;
 //import org.springframework.context.annotation.Configuration;
@@ -28,7 +29,8 @@
 //        return dynamicDataSource;
 //    }
 //
-//    /**
+//
+///**
 //     * 创建并返回一个默认的数据源
 //     *
 //     * @return DruidDataSource 数据源实例
